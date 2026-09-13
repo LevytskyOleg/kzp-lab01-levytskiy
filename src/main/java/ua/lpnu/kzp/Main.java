@@ -106,13 +106,13 @@ public final class Main {
 
         // Запис у файл
         try {
-            if (outputPath.getParent() != null) {
-                Files.createDirectories(outputPath.getParent());
+            Path parent = outputPath.getParent();
+            if (parent != null) {
+                Files.createDirectories(parent);
             }
             Files.writeString(outputPath, report, StandardCharsets.UTF_8);
             System.out.printf(Locale.ROOT, "%nЗвіт успішно збережено у файл: %s%n", outputPath);
         } catch (IOException e) {
             System.out.printf("Помилка запису у файл: %s%n", e.getMessage());
         }
-    }
-}
+    }}
