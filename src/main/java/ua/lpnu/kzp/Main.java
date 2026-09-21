@@ -18,9 +18,14 @@ public final class Main {
 
     public static void main(String[] args) {
         // Обробка аргументів командного рядка
-        if (args.length > 0 && "--help".equals(args[0])) {
-            System.out.printf("Використання: java -jar lab01.jar [--input <файл>] [--output <файл>]%n");
-            return;
+        if (args.length > 0) {
+            if ("--help".equals(args[0])) {
+                System.out.printf("Використання: java -jar lab01.jar [--input <файл>] [--output <файл>]%n");
+                return;
+            } else if ("--version".equals(args[0])) {
+                System.out.printf("v1.0.0%n");
+                return;
+            }
         }
 
         // Шляхи за замовчуванням
