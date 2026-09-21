@@ -17,6 +17,7 @@ import java.util.Locale;
  * та формує форматований звіт.
  *
  * @author Олег Левицький
+ * @version 1.0.0
  */
 public final class Main {
     /* Забороняє створення екземплярів службового класу. */
