@@ -33,21 +33,31 @@ public final class Main {
      *
      * @param args аргументи командного рядка
      */
-    public static void main(String[] args) {
-        // Обробка аргументів командного рядка
-        if (args.length > 0) {
-            if ("--help".equals(args[0])) {
+    public static void main(String[] args) { // <-- Важлива відкриваюча дужка
+        String inputFile = "data.csv";
+        String outputFile = "out/report.txt";
+
+        for (int i = 0; i < args.length; i++) {
+            if ("--help".equals(args[i])) {
                 System.out.printf("Використання: java -jar lab01.jar [--input <файл>] [--output <файл>]%n");
                 return;
-            } else if ("--version".equals(args[0])) {
+            } else if ("--version".equals(args[i])) {
                 System.out.printf("v1.0.0%n");
                 return;
+            } else if ("--input".equals(args[i]) && i + 1 < args.length) {
+                inputFile = args[i + 1];
+                i++;
+            } else if ("--output".equals(args[i]) && i + 1 < args.length) {
+                outputFile = args[i + 1];
+                i++;
             }
-        }
+        } // <-- Цикл for закінчився. Тут має бути лише одна дужка }
+
+
 
         // Шляхи за замовчуванням
-        Path inputPath = Path.of("data", "input.csv");
-        Path outputPath = Path.of("out", "report.txt");
+        Path inputPath = Path.of(inputFile);
+        Path outputPath = Path.of(outputFile);
 
         List<String> lines;
         try {
@@ -80,15 +90,16 @@ public final class Main {
                 continue;
             }
 
-            if (fields[0].isBlank() || fields[4].isBlank()) {
+            // Перевірка текстових полів (fields[1] - guest, fields[4] - category)
+            if (fields[1].isBlank() || fields[4].isBlank()) {
                 errors.add(String.format("Рядок %d: порожнє обов'язкове текстове поле", i + 1));
                 continue;
             }
 
             try {
-                int room = Integer.parseInt(fields[1].trim());
-                int nights = Integer.parseInt(fields[2].trim());
-                double nightlyRate = Double.parseDouble(fields[3].trim());
+                int room = Integer.parseInt(fields[0].trim());            // room тепер на першому місці (індекс 0)
+                int nights = Integer.parseInt(fields[2].trim());          // nights (індекс 2)
+                double nightlyRate = Double.parseDouble(fields[3].trim());// nightlyRate (індекс 3)
 
                 // Перевірка на від'ємні значення, які не мають сенсу
                 if (room <= 0 || nights < 0 || nightlyRate < 0) {
