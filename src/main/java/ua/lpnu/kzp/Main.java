@@ -118,6 +118,10 @@ public final class Main {
             }
         }
 
+        if (validCount == 0) {
+            System.out.println("Немає жодного коректного запису для обробки.");
+            return;
+        }
         // Формування звіту
         StringBuilder reportBuilder = new StringBuilder();
         reportBuilder.append(String.format(Locale.ROOT, "--- ЗВІТ (Варіант 14: Готель) ---%n"));
