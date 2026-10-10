@@ -10,6 +10,7 @@ import java.util.Locale;
 
 /**
  * Головний клас програми для обробки даних готелю (Варіант 14).
+ *
  * <p>
  * Програма читає записи про проживання гостей з текстового файлу,
  * перевіряє їх на коректність, обчислює статистичні показники
@@ -31,8 +32,7 @@ public final class Main {
      *
      * @param args аргументи командного рядка
      */
-
-    public static void main(String[] args) { // <-- Важлива відкриваюча дужка
+    public static void main(String[] args) {
         String inputFile = "data.csv";
         String outputFile = "out/report.txt";
 
@@ -50,9 +50,7 @@ public final class Main {
                 outputFile = args[i + 1];
                 i++;
             }
-        } // <-- Цикл for закінчився. Тут має бути лише одна дужка }
-
-
+        }
 
         // Шляхи за замовчуванням
         Path inputPath = Path.of(inputFile);
@@ -67,8 +65,10 @@ public final class Main {
             return;
         }
 
+        // Створюємо списки для об'єктів Booking та повідомлень про помилки
+        List<Booking> bookings = new ArrayList<>();
         List<String> errors = new ArrayList<>();
-        int validCount = 0;
+
         int totalNights = 0;
         double totalRevenue = 0.0;
         int maxNights = 0;
@@ -82,53 +82,38 @@ public final class Main {
                 continue;
             }
 
-            // Розділяємо рядок, зберігаючи порожні поля в кінці
-            String[] fields = line.split(";", -1);
-            if (fields.length != 5) {
-                errors.add(String.format("Рядок %d: очікується 5 полів, знайдено %d", i + 1, fields.length));
-                continue;
-            }
-
-            // Перевірка текстових полів (fields[1] - guest, fields[4] - category)
-            if (fields[1].isBlank() || fields[4].isBlank()) {
-                errors.add(String.format("Рядок %d: порожнє обов'язкове текстове поле", i + 1));
-                continue;
-            }
-
             try {
-                int room = Integer.parseInt(fields[0].trim());            // room тепер на першому місці (індекс 0)
-                int nights = Integer.parseInt(fields[2].trim());          // nights (індекс 2)
-                double nightlyRate = Double.parseDouble(fields[3].trim());// nightlyRate (індекс 3)
+                // Викликаємо фабричний метод для створення об'єкта та його валідації
+                Booking booking = Booking.fromCsv(line);
+                bookings.add(booking);
 
-                // Перевірка на від'ємні значення, які не мають сенсу
-                if (room <= 0 || nights < 0 || nightlyRate < 0) {
-                    errors.add(String.format("Рядок %d: від'ємне або некоректне числове значення", i + 1));
-                    continue;
-                }
+                // Отримуємо значення через геттери для проміжних обчислень
+                totalNights += booking.getNights();
+                totalRevenue += (booking.getNights() * booking.getNightlyRate());
+                maxNights = Math.max(maxNights, booking.getNights());
 
-                // Включення в обчислення тільки валідних записів
-                validCount++;
-                totalNights += nights;
-                totalRevenue += (nights * nightlyRate);
-                maxNights = Math.max(maxNights, nights);
-
-            } catch (NumberFormatException e) {
-                errors.add(String.format("Рядок %d: числове поле має помилковий формат", i + 1));
+            } catch (IllegalArgumentException e) {
+                // Перехоплюємо помилки формату чи валідації і додаємо у список
+                errors.add(String.format("Рядок %d: %s", i + 1, e.getMessage()));
             }
         }
 
-        if (validCount == 0) {
+        if (bookings.isEmpty()) {
             System.out.println("Немає жодного коректного запису для обробки.");
             return;
         }
-        // Формування звіту
+
+        // Запаковуємо фінальну статистику у record
+        NightsRate summary = new NightsRate(bookings.size(), totalNights, totalRevenue, maxNights);
+
+        // Формування звіту (формат залишається незмінним)
         StringBuilder reportBuilder = new StringBuilder();
         reportBuilder.append(String.format(Locale.ROOT, "--- ЗВІТ (Варіант 14: Готель) ---%n"));
         reportBuilder.append(String.format(Locale.ROOT, "%-30s %10s%n", "Показник", "Значення"));
-        reportBuilder.append(String.format(Locale.ROOT, "%-30s %10d%n", "Кількість коректних записів", validCount));
-        reportBuilder.append(String.format(Locale.ROOT, "%-30s %10d%n", "Сумарна кількість ночей", totalNights));
-        reportBuilder.append(String.format(Locale.ROOT, "%-30s %10.2f%n", "Загальний виторг", totalRevenue));
-        reportBuilder.append(String.format(Locale.ROOT, "%-30s %10d%n", "Найдовше проживання", maxNights));
+        reportBuilder.append(String.format(Locale.ROOT, "%-30s %10d%n", "Кількість коректних записів", summary.validCount()));
+        reportBuilder.append(String.format(Locale.ROOT, "%-30s %10d%n", "Сумарна кількість ночей", summary.totalNights()));
+        reportBuilder.append(String.format(Locale.ROOT, "%-30s %10.2f%n", "Загальний виторг", summary.totalRevenue()));
+        reportBuilder.append(String.format(Locale.ROOT, "%-30s %10d%n", "Найдовше проживання", summary.maxNights()));
 
         reportBuilder.append(String.format(Locale.ROOT, "%n--- ПОМИЛКИ: %d ---%n", errors.size()));
         for (String error : errors) {
