@@ -18,7 +18,7 @@ import java.util.Locale;
  * та формує форматований звіт.
  *
  * @author Олег Левицький
- * @version 1.0.0
+ * @version 2.0.0
  */
 public final class Main {
     /* Забороняє створення екземплярів службового класу. */
@@ -33,7 +33,7 @@ public final class Main {
      * @param args аргументи командного рядка
      */
     public static void main(String[] args) {
-        String inputFile = "data.csv";
+        String inputFile = "data/input.csv";
         String outputFile = "out/report.txt";
 
         for (int i = 0; i < args.length; i++) {
@@ -41,7 +41,7 @@ public final class Main {
                 System.out.printf("Використання: java -jar lab01.jar [--input <файл>] [--output <файл>]%n");
                 return;
             } else if ("--version".equals(args[i])) {
-                System.out.printf("v1.0.0%n");
+                System.out.printf("v2.0.0%n");
                 return;
             } else if ("--input".equals(args[i]) && i + 1 < args.length) {
                 inputFile = args[i + 1];
