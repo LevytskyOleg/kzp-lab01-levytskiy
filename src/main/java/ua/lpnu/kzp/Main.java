@@ -41,7 +41,17 @@ public final class Main {
                 System.out.printf("Використання: java -jar lab01.jar [--input <файл>] [--output <файл>]%n");
                 return;
             } else if ("--version".equals(args[i])) {
-                System.out.printf("v2.0.0%n");
+                try (java.io.InputStream input = Main.class.getClassLoader().getResourceAsStream("application.properties")) {
+                    java.util.Properties prop = new java.util.Properties();
+                    if (input != null) {
+                        prop.load(input);
+                        System.out.printf("v%s%n", prop.getProperty("version", "2.0.0"));
+                    } else {
+                        System.out.printf("v2.0.0%n");
+                    }
+                } catch (java.io.IOException e) {
+                    System.out.printf("v2.0.0%n");
+                }
                 return;
             } else if ("--input".equals(args[i]) && i + 1 < args.length) {
                 inputFile = args[i + 1];
@@ -99,6 +109,14 @@ public final class Main {
         }
 
         if (bookings.isEmpty()) {
+            // Спочатку виводимо всі накопичені помилки розбору рядків
+            if (!errors.isEmpty()) {
+                System.out.println("Помилки під час розбору даних:");
+                for (String err : errors) {
+                    System.out.println(err);
+                }
+            }
+
             System.out.println("Немає жодного коректного запису для обробки.");
             return;
         }

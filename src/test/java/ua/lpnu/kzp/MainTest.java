@@ -25,16 +25,32 @@ class MainTest {
     }
 
     @Test
-    void testNegativeDataValidation(@TempDir Path tempDir) throws IOException {
-        // НЕГАТИВНИЙ ТЕСТ 1: некоректний формат числа та від'ємні значення
-        Path inputFile = tempDir.resolve("invalid_data.csv");
-        Path outputFile = tempDir.resolve("out.txt");
-        // Передаємо від'ємну кількість ночей (-3) та текст замість числа ("п'ять")
-        Files.writeString(inputFile, "103;Сидоров;-3;1500.0;Люкс\n104;Коваленко;п'ять;1000.0;Економ");
+    void testNegativeDataValidation() throws Exception {
+        // 1. Перехоплюємо вивід програми в консоль
+        java.io.ByteArrayOutputStream outContent = new java.io.ByteArrayOutputStream();
+        System.setOut(new java.io.PrintStream(outContent));
 
-        String[] args = {"--input", inputFile.toString(), "--output", outputFile.toString()};
+        // 2. Створюємо тимчасовий файл із гарантовано неправильними даними
+        java.nio.file.Path tempFile = java.nio.file.Files.createTempFile("invalid_data", ".csv");
+        java.nio.file.Files.writeString(tempFile,
+            "bad_room;Іван;bad_nights;bad_rate;Люкс\n" +
+                "-5;Олег;-3;-100.0;Стандарт"
+        );
 
-        assertDoesNotThrow(() -> Main.main(args), "Програма не повинна падати при некоректних даних, вона має їх просто пропустити");
+        // 3. Запускаємо програму з нашим тимчасовим файлом
+        Main.main(new String[]{"--input", tempFile.toString()});
+
+        // 4. Зберігаємо те, що програма вивела, і повертаємо консоль до норми
+        String output = outContent.toString();
+        System.setOut(System.out);
+
+        // 5. Видаляємо тимчасовий файл (прибираємо за собою)
+        java.nio.file.Files.delete(tempFile);
+
+        // 6. Перевіряємо, чи вивела програма правильні повідомлення
+        org.junit.jupiter.api.Assertions.assertTrue(output.contains("Помилки під час розбору даних:"));
+        org.junit.jupiter.api.Assertions.assertTrue(output.contains("Рядок")); // перевіряє, що вказано номер рядка з помилкою
+        org.junit.jupiter.api.Assertions.assertTrue(output.contains("Немає жодного коректного запису для обробки."));
     }
 
     @Test
@@ -51,5 +67,26 @@ class MainTest {
         String[] args = {"--help"};
 
         assertDoesNotThrow(() -> Main.main(args), "Команда --help має відпрацювати штатно");
+    }
+    @Test
+    void testBoundaryValidValues() {
+        // Крайові допустимі значення: мінімальний номер кімнати (1), мінімальні ночі (0 або 1 залежно від твоєї валідації), нульовий тариф
+        Booking booking = new Booking(1, "Тест", 0, 0.0, "Стандарт");
+        org.junit.jupiter.api.Assertions.assertEquals(1, booking.getRoom());
+        org.junit.jupiter.api.Assertions.assertEquals(0, booking.getNights());
+        org.junit.jupiter.api.Assertions.assertEquals(0.0, booking.getNightlyRate());
+    }
+
+    @Test
+    void testBoundaryInvalidValues() {
+        // Крайові недопустимі: нульова кімната (якщо мінімум 1), від'ємні ночі (-1), від'ємний тариф (-0.1)
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () ->
+            new Booking(0, "Тест", 5, 100.0, "Стандарт"), "Кімната 0 має викликати виняток");
+
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () ->
+            new Booking(101, "Тест", -1, 100.0, "Стандарт"), "-1 ніч має викликати виняток");
+
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () ->
+            new Booking(101, "Тест", 5, -0.1, "Стандарт"), "Від'ємний тариф має викликати виняток");
     }
 }
