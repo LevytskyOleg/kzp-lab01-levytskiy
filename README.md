@@ -11,7 +11,7 @@
 \`\`\`text
 mvnw.cmd verify
 mvnw.cmd package
-java -jar target/lab01-1.0.0.jar
+java -jar target/lab02-2.0.0.jar
 \`\`\`
 На macOS та Ubuntu замість `mvnw.cmd` використовуйте `./mvnw`[cite: 1].
 
