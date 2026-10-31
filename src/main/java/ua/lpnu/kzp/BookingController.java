@@ -18,7 +18,6 @@ public class BookingController {
             lines = Files.readAllLines(Paths.get(inputFile));
         } catch (IOException e) {
             System.out.println("Помилка читання файлу: " + e.getMessage());
-            System.exit(1);
             return;
         }
 
@@ -42,7 +41,7 @@ public class BookingController {
                 }
             }
             System.out.println("Немає жодного коректного запису для обробки.");
-            System.exit(1); // Код завершення 1 вказує на помилку
+            return; // Код завершення 1 вказує на помилку
         }
 
         generateReport(validBookings, outputFile);

@@ -6,12 +6,12 @@ public class Main {
 
         if (parser.isHelpRequested()) {
             System.out.printf("Використання: java -jar lab03.jar [--input <файл>] [--output <файл>]%n");
-            System.exit(0);
+            return;
         }
 
         if (parser.isVersionRequested()) {
             System.out.printf("v%s%n", parser.getVersion());
-            System.exit(0);
+            return;
         }
 
         String inputFile = parser.getInputFile();

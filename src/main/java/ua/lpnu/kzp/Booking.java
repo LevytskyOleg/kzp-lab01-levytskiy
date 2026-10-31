@@ -9,20 +9,42 @@ public abstract class Booking {
     private final int nights;
     private final RoomKind kind;
 
+    /** Створює бронювання із перевіреними полями. */
     protected Booking(int room, String guestName, int nights, RoomKind kind) {
-        if (room <= 0) {
-            throw new IllegalArgumentException("Номер кімнати має бути додатним");
-        }
-        if (guestName == null || guestName.isBlank()) {
-            throw new IllegalArgumentException("Ім'я гостя не може бути порожнім");
-        }
-        if (nights < 0) {
-            throw new IllegalArgumentException("Кількість ночей не може бути від'ємною");
-        }
+        this(validateRoom(room), validateName(guestName), validateNights(nights), validateKind(kind), true);
+    }
+
+    /* Присвоює вже перевірений стан. */
+    private Booking(int room, String guestName, int nights, RoomKind kind, boolean validated) {
         this.room = room;
         this.guestName = guestName;
         this.nights = nights;
-        this.kind = Objects.requireNonNull(kind, "Категорія номеру не може бути null");
+        this.kind = kind;
+    }
+
+    private static int validateRoom(int room) {
+        if (room <= 0) {
+            throw new IllegalArgumentException("Номер кімнати має бути додатним");
+        }
+        return room;
+    }
+
+    private static String validateName(String guestName) {
+        if (guestName == null || guestName.isBlank()) {
+            throw new IllegalArgumentException("Ім'я гостя не може бути порожнім");
+        }
+        return guestName;
+    }
+
+    private static int validateNights(int nights) {
+        if (nights < 0) {
+            throw new IllegalArgumentException("Кількість ночей не може бути від'ємною");
+        }
+        return nights;
+    }
+
+    private static RoomKind validateKind(RoomKind kind) {
+        return Objects.requireNonNull(kind, "Категорія номеру не може бути null");
     }
 
     public final int getRoom() { return room; }
