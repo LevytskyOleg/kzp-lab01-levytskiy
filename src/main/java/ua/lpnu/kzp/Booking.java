@@ -1,104 +1,70 @@
 package ua.lpnu.kzp;
 
-import java.util.Locale;
 import java.util.Objects;
 
-/**
- * Описує коректний запис про бронювання в готелі (Варіант 14).
- * Клас є незмінним (immutable).
- */
-public final class Booking {
-
-    // Всі поля є private (закриті від зовнішнього втручання) та final (незмінні після створення)
+/** Спільний базовий тип для бронювань. */
+public abstract class Booking {
     private final int room;
-    private final String guest;
+    private final String guestName;
     private final int nights;
-    private final double nightlyRate;
-    private final String category;
+    private final RoomKind kind;
 
-    /**
-     * Створює коректний запис про бронювання після перевірки інваріантів.
-     */
-    public Booking(int room, String guest, int nights, double nightlyRate, String category) {
-
-        // 1. Перевірка на null для текстових полів (щоб програма не впала з NullPointerException)
-        this.guest = Objects.requireNonNull(guest, "Ім'я гостя не може бути null");
-        this.category = Objects.requireNonNull(category, "Категорія не може бути null");
-
-        // 2. Перевірка на порожні рядки (як вимагає методичка для гостя і категорії)
-        if (this.guest.isBlank() || this.category.isBlank()) {
-            throw new IllegalArgumentException("Ім'я гостя та категорія не можуть бути порожніми");
-        }
-
-        // 3. Перевірка числових полів на від'ємні значення та коректність формату
-        if (room <= 0 || nights < 0 || nightlyRate < 0 || !Double.isFinite(nightlyRate)) {
-            throw new IllegalArgumentException("Номер кімнати має бути > 0, ночі та тариф >= 0, а тариф - скінченним числом");
-        }
-
-        // Якщо всі перевірки пройдені, присвоюємо значення полям
-        this.room = room;
-        this.nights = nights;
-        this.nightlyRate = nightlyRate;
+    /** Створює бронювання із перевіреними полями. */
+    protected Booking(int room, String guestName, int nights, RoomKind kind) {
+        this(validateRoom(room), validateName(guestName), validateNights(nights), validateKind(kind), true);
     }
 
-    // --- Далі йдуть тільки ГЕТТЕРИ (методи для читання). СЕТТЕРІВ немає, щоб зберегти незмінність об'єкта ---
+    /* Присвоює вже перевірений стан. */
+    private Booking(int room, String guestName, int nights, RoomKind kind, boolean validated) {
+        this.room = room;
+        this.guestName = guestName;
+        this.nights = nights;
+        this.kind = kind;
+    }
 
-    public int getRoom() {
+    private static int validateRoom(int room) {
+        if (room <= 0) {
+            throw new IllegalArgumentException("Номер кімнати має бути додатним");
+        }
         return room;
     }
 
-    public String getGuest() {
-        return guest;
+    private static String validateName(String guestName) {
+        if (guestName == null || guestName.isBlank()) {
+            throw new IllegalArgumentException("Ім'я гостя не може бути порожнім");
+        }
+        return guestName;
     }
 
-    public int getNights() {
+    private static int validateNights(int nights) {
+        if (nights < 0) {
+            throw new IllegalArgumentException("Кількість ночей не може бути від'ємною");
+        }
         return nights;
     }
 
-    public double getNightlyRate() {
-        return nightlyRate;
+    private static RoomKind validateKind(RoomKind kind) {
+        return Objects.requireNonNull(kind, "Категорія номеру не може бути null");
     }
 
-    public String getCategory() {
-        return category;
-    }
-    /**
-     * Створює запис із CSV-рядка.
-     *
-     * @param line рядок у форматі: room;guest;nights;nightlyRate;category
-     * @return створений запис (об'єкт Booking)
-     * @throws IllegalArgumentException якщо структура або числа некоректні
-     */
-    public static Booking fromCsv(String line) {
-        // Фабрика відповідає лише за структуру й типи полів, конструктор — за інваріанти
-        Objects.requireNonNull(line, "Рядок не може бути null");
-        String[] fields = line.split(";", -1); // Розділяємо рядок, зберігаючи порожні поля
+    public final int getRoom() { return room; }
+    public final String getGuestName() { return guestName; }
+    public final int getNights() { return nights; }
+    public final RoomKind getKind() { return kind; }
 
-        // Викладач вимагає перевірку на точну кількість полів
-        if (fields.length != 5) {
-            throw new IllegalArgumentException("Очікується 5 полів");
-        }
+    /** Поліморфна операція: обчислює підсумкову вартість проживання. */
+    public abstract double getCost();
 
-        try {
-            int room = Integer.parseInt(fields[0].trim());
-            String guest = fields[1].trim();
-            int nights = Integer.parseInt(fields[2].trim());
-            double nightlyRate = Double.parseDouble(fields[3].trim());
-            String category = fields[4].trim();
-
-            return new Booking(room, guest, nights, nightlyRate, category);
-        } catch (NumberFormatException exception) {
-            // Перехоплюємо помилку перетворення тексту в число і кидаємо свою, зрозумілу
-            throw new IllegalArgumentException("Числове поле має помилковий формат", exception);
-        }
-    }
-
-    /**
-     * Повертає текстове подання запису.
-     */
     @Override
-    public String toString() {
-        return String.format(Locale.ROOT, "Кімната %d: %s, %d ночей, %.2f грн (Категорія: %s)",
-            room, guest, nights, nightlyRate, category);
+    public final boolean equals(Object other) {
+        if (this == other) return true;
+        if (other == null || getClass() != other.getClass()) return false;
+        Booking booking = (Booking) other;
+        return room == booking.room;
+    }
+
+    @Override
+    public final int hashCode() {
+        return Objects.hash(getClass(), room);
     }
 }
