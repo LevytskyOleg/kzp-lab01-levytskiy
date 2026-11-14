@@ -5,13 +5,28 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.IntSummaryStatistics;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-/** Контролер, що керує процесом обробки бронювань. */
+/**
+ * Контролер, що керує процесом зчитування, валідації та потокової обробки бронювань.
+ */
 public class BookingController {
 
+    /** Створює контролер обробки бронювань. */
+    public BookingController() {
+    }
+
+    /**
+     * Зчитує вхідний CSV-файл, валідує записи та формує звіт у вихідний файл.
+     *
+     * @param inputFile  шлях до вхідного файлу
+     * @param outputFile шлях до вихідного файлу звіту
+     */
     public void process(String inputFile, String outputFile) {
         List<String> lines;
         try {
@@ -41,7 +56,7 @@ public class BookingController {
                 }
             }
             System.out.println("Немає жодного коректного запису для обробки.");
-            return; // Код завершення 1 вказує на помилку
+            return;
         }
 
         generateReport(validBookings, outputFile);
@@ -59,7 +74,6 @@ public class BookingController {
         double rate = Double.parseDouble(parts[3].trim());
         String kindStr = parts[4].trim();
 
-        // Створення різних підтипів залежно від категорії
         if ("Стандарт".equalsIgnoreCase(kindStr)) {
             return new StandardBooking(room, name, nights, rate);
         } else if ("Люкс".equalsIgnoreCase(kindStr) || "Апартаменти".equalsIgnoreCase(kindStr)) {
@@ -70,20 +84,46 @@ public class BookingController {
     }
 
     private void generateReport(List<Booking> bookings, String outputFile) {
-        double totalRevenue = 0.0;
-        Set<Booking> uniqueRooms = new HashSet<>(bookings); // Працюють наші equals/hashCode!
+        Set<Booking> uniqueRooms = new HashSet<>(bookings);
+
+        // Потокові обчислення замість ручного накопичення в циклі
+        double totalRevenue = bookings.stream()
+            .mapToDouble(Booking::getCost)
+            .sum();
+
+        IntSummaryStatistics nightsStats = BookingQueries.nightsStatistics(bookings);
+        long validCount = nightsStats.getCount();
+        long totalNights = nightsStats.getSum();
+        int maxNights = validCount > 0 ? nightsStats.getMax() : 0;
+
+        Map<RoomKind, Long> byKind = BookingQueries.countByKind(bookings);
+        List<Integer> top5Rooms = BookingQueries.extractRoomNumbers(
+            BookingQueries.topLongestBookings(bookings, 5)
+        );
 
         StringBuilder report = new StringBuilder();
         for (Booking b : bookings) {
-            double cost = b.getCost(); // Поліморфний виклик!
-            totalRevenue += cost;
+            double cost = b.getCost();
             String outLine = String.format(Locale.ROOT, "Кімната %d (%s): %s, %d ночей, Вартість: %.2f",
                 b.getRoom(), b.getKind().label(), b.getGuestName(), b.getNights(), cost);
             System.out.println(outLine);
             report.append(outLine).append(System.lineSeparator());
         }
 
-        String summary = String.format(Locale.ROOT, "Загальний виторг: %.2f%nУнікальних кімнат: %d", totalRevenue, uniqueRooms.size());
+        String kindSummary = byKind.entrySet().stream()
+            .map(entry -> entry.getKey().label() + "=" + entry.getValue())
+            .collect(Collectors.joining(", ", "{", "}"));
+
+        String summary = String.format(Locale.ROOT,
+            "Коректних записів: %d%n"
+                + "Загальна кількість ночей: %d%n"
+                + "Максимальна тривалість (ночей): %d%n"
+                + "Загальний виторг: %.2f%n"
+                + "Унікальних кімнат: %d%n"
+                + "Розподіл за категоріями: %s%n"
+                + "Top-5 найдовших бронювань (кімнати): %s",
+            validCount, totalNights, maxNights, totalRevenue, uniqueRooms.size(), kindSummary, top5Rooms);
+
         System.out.println(summary);
         report.append(summary).append(System.lineSeparator());
 

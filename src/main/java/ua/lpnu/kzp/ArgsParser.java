@@ -14,6 +14,11 @@ public class ArgsParser {
     private boolean versionRequested = false;
     private String version = "unknown";
 
+    /**
+     * Створює парсер, завантажує версію застосунку та розбирає аргументи командного рядка.
+     *
+     * @param args масив аргументів командного рядка
+     */
     public ArgsParser(String[] args) {
         loadVersion();
         parse(args);
@@ -47,9 +52,18 @@ public class ArgsParser {
         }
     }
 
+    /** @return шлях до вхідного файлу */
     public String getInputFile() { return inputFile; }
+
+    /** @return шлях до вихідного файлу звіту */
     public String getOutputFile() { return outputFile; }
+
+    /** @return {@code true}, якщо запитано довідку ({@code --help}) */
     public boolean isHelpRequested() { return helpRequested; }
+
+    /** @return {@code true}, якщо запитано версію ({@code --version}) */
     public boolean isVersionRequested() { return versionRequested; }
+
+    /** @return поточна версія програми */
     public String getVersion() { return version; }
 }
