@@ -47,11 +47,17 @@ public abstract class Booking {
         return Objects.requireNonNull(kind, "Категорія номеру не може бути null");
     }
 
+    /** @return номер кімнати */
     public final int getRoom() { return room; }
-    public final String getGuestName() { return guestName; }
-    public final int getNights() { return nights; }
-    public final RoomKind getKind() { return kind; }
 
+    /** @return ім'я гостя */
+    public final String getGuestName() { return guestName; }
+
+    /** @return кількість ночей проживання */
+    public final int getNights() { return nights; }
+
+    /** @return категорія номера */
+    public final RoomKind getKind() { return kind; }
     /** Поліморфна операція: обчислює підсумкову вартість проживання. */
     public abstract double getCost();
 

@@ -1,11 +1,24 @@
 package ua.lpnu.kzp;
 
+/**
+ * Головний клас запуску консольного застосунку обліку бронювань готелю.
+ */
 public class Main {
+
+    /** Приватний конструктор, що запобігає створенню екземплярів утилітного класу. */
+    private Main() {
+    }
+
+    /**
+     * Точка входу в програму.
+     *
+     * @param args аргументи командного рядка ({@code --input}, {@code --output}, {@code --help}, {@code --version})
+     */
     public static void main(String[] args) {
         ArgsParser parser = new ArgsParser(args);
 
         if (parser.isHelpRequested()) {
-            System.out.printf("Використання: java -jar lab03.jar [--input <файл>] [--output <файл>]%n");
+            System.out.printf("Використання: java -jar lab04.jar [--input <файл>] [--output <файл>]%n");
             return;
         }
 
@@ -17,7 +30,6 @@ public class Main {
         String inputFile = parser.getInputFile();
         String outputFile = parser.getOutputFile();
 
-        // Запуск обработки через контроллер
         BookingController controller = new BookingController();
         controller.process(inputFile, outputFile);
     }
