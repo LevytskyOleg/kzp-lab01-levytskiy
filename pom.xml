@@ -3,8 +3,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>ua.lpnu.kzp</groupId>
-    <artifactId>lab04</artifactId>
-    <version>4.0.0</version>
+    <artifactId>lab05</artifactId>
+    <version>5.0.0</version>
 
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
