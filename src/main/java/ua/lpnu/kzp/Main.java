@@ -18,7 +18,7 @@ public class Main {
         ArgsParser parser = new ArgsParser(args);
 
         if (parser.isHelpRequested()) {
-            System.out.printf("Використання: java -jar lab04.jar [--input <файл>] [--output <файл>]%n");
+            System.out.printf("Використання: java -jar lab05.jar [--input <файл>] [--output <файл>]%n");
             return;
         }
 

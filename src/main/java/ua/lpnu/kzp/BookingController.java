@@ -36,17 +36,19 @@ public class BookingController {
             return;
         }
 
-        List<Booking> validBookings = new ArrayList<>();
+        Repository<Booking> repository = new Repository<>();
         List<String> errors = new ArrayList<>();
 
         for (int i = 0; i < lines.size(); i++) {
             String line = lines.get(i);
             try {
-                validBookings.add(parseLine(line));
+                repository.add(parseLine(line));
             } catch (Exception e) {
                 errors.add(String.format("Рядок %d: %s - %s", i + 1, line, e.getMessage()));
             }
         }
+
+        List<Booking> validBookings = repository.all();
 
         if (validBookings.isEmpty()) {
             if (!errors.isEmpty()) {
