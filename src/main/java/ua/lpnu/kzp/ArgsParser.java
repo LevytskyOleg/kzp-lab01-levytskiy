@@ -10,6 +10,7 @@ import java.util.Properties;
 public class ArgsParser {
     private String inputFile = "data/input.csv";
     private String outputFile = "report.txt";
+    private String exportFile = null;
     private boolean helpRequested = false;
     private boolean versionRequested = false;
     private String version = "unknown";
@@ -48,6 +49,9 @@ public class ArgsParser {
             } else if ("--output".equals(args[i]) && i + 1 < args.length) {
                 outputFile = args[i + 1];
                 i++;
+            } else if ("--export".equals(args[i]) && i + 1 < args.length) {
+                exportFile = args[i + 1];
+                i++;
             }
         }
     }
@@ -57,6 +61,9 @@ public class ArgsParser {
 
     /** @return шлях до вихідного файлу звіту */
     public String getOutputFile() { return outputFile; }
+
+    /** @return шлях до вихідного CSV-файлу експорту або {@code null}, якщо не задано явно */
+    public String getExportFile() { return exportFile; }
 
     /** @return {@code true}, якщо запитано довідку ({@code --help}) */
     public boolean isHelpRequested() { return helpRequested; }

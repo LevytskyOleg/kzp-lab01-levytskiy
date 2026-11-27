@@ -5,20 +5,20 @@ package ua.lpnu.kzp;
  */
 public class Main {
 
-    /** Приватний конструктор, що запобігає створенню екземплярів утилітного класу. */
+    /* Забороняє створення екземплярів утилітного класу. */
     private Main() {
     }
 
     /**
      * Точка входу в програму.
      *
-     * @param args аргументи командного рядка ({@code --input}, {@code --output}, {@code --help}, {@code --version})
+     * @param args аргументи командного рядка ({@code --input}, {@code --output}, {@code --export}, {@code --help}, {@code --version})
      */
     public static void main(String[] args) {
         ArgsParser parser = new ArgsParser(args);
 
         if (parser.isHelpRequested()) {
-            System.out.printf("Використання: java -jar lab05.jar [--input <файл>] [--output <файл>]%n");
+            System.out.printf("Використання: java -jar lab05.jar [--input <файл>] [--output <файл>] [--export <csv-файл>]%n");
             return;
         }
 
@@ -27,10 +27,7 @@ public class Main {
             return;
         }
 
-        String inputFile = parser.getInputFile();
-        String outputFile = parser.getOutputFile();
-
         BookingController controller = new BookingController();
-        controller.process(inputFile, outputFile);
+        controller.process(parser.getInputFile(), parser.getOutputFile(), parser.getExportFile());
     }
 }
